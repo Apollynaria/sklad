@@ -5,18 +5,54 @@ import pylab
 
 
 def addWeight(weight_, c_, vec_, max_w_, sorted_r_):  # добавление веса, если вес не максимальный
-    sorted_r_for_add = sorted_r_.copy()
-    while weight_ < max_w_:
-        for i in range(len(vec_)):  # цикл по вектору
-            if weight_ + sorted_r_for_add[0][0] <= max_w_ and vec_[i] == 0:  # проверка, можно ли добавлять
-                weight_ += sorted_r_for_add[0][0]
-                vec_[i] = 1
-                c_ += sorted_r_for_add[0][1]
-                sorted_r_for_add.pop(0)
-            else:  # если не нужно, то уже добавить не сможем, тк отсортированно по весу
-                break
-        break
+    indices = [i for i in range(len(vec_)) if vec_[i] == 0]
+    indices = random.sample(indices, len(indices))
+
+    for index in indices:
+        if weight_ == max_w_:
+            return [vec_, weight_, c_]
+        if weight_ + sorted_r_[index][0] > max_w_:
+            continue
+        weight_ += sorted_r_[index][0]
+        vec_[index] = 1
+        c_ += sorted_r_[index][1]
+
     return [vec_, weight_, c_]
+
+
+def makeChild(cross_point, parent1, parent2):
+    child = np.zeros(len_r)
+    weight = 0
+    c = 0
+    # Определение гена для потомка на основе родительских генов
+    for l in range(cross_point):
+        child[l] = parent1[0][l]  # первая часть копируется полностью
+        if child[l] == 1:
+            weight += sorted_r[l][0]
+            c += sorted_r[l][1]
+    for l in range(cross_point, len_r):  # вторую часть редактируем при необходимости
+        if parent2[0][l] == 1:
+            if weight + sorted_r[l][0] > max_w:  # копируем только то, что входит
+                continue
+            else:
+                child[l] = parent2[0][l]
+                weight += sorted_r[l][0]
+                c += sorted_r[l][1]
+
+    # Добавление случайной мутации (корректируем, если вышли за пределы)
+    if random.random() < mutation:
+        index = random.randint(0, len_r - 1)  # Выбор случайного гена
+        if child[index] == 0 and weight + sorted_r[index][0] < max_w:  # если ген меняется w < w_склада
+            weight += sorted_r[index][0]
+            c += sorted_r[index][1]
+            child[index] = 1 - child[index]
+        elif child[index] == 1:  # если ген изменился на 0
+            weight -= sorted_r[index][0]
+            c -= sorted_r[index][1]
+            child[index] = 1 - child[index]
+
+    data = addWeight(weight, c, child, max_w, sorted_r)  # c - функция качества
+    return data
 
 
 def isEqual(parent1, parent2):
@@ -24,7 +60,6 @@ def isEqual(parent1, parent2):
         return 1
     else:
         return 0
-
 
 r = [(11, 137), (6, 62), (7, 160), (15, 34), (3, 16), (5, 182), (12, 37), (15, 114), (12, 55), (9, 41), (12, 130),
      (13, 33), (10, 72),
@@ -42,112 +77,10 @@ r = [(11, 137), (6, 62), (7, 160), (15, 34), (3, 16), (5, 182), (12, 37), (15, 1
      (12, 181), (8, 63), (2, 38),
      (2, 143), (5, 93), (8, 40), (10, 183), (6, 169), (7, 178), (9, 92)]
 
-r = [(54, 297),
-     (95, 295),
-     (36, 293),
-     (18, 292),
-     (4, 291),
-     (71, 289),
-     (83, 284),
-     (16, 284),
-     (27, 283),
-     (84, 283),
-     (88, 281),
-     (45, 280),
-     (94, 279),
-     (64, 277),
-     (14, 276),
-     (80, 275),
-     (4, 273),
-     (23, 264),
-     (75, 260),
-     (36, 257),
-     (90, 250),
-     (20, 236),
-     (77, 236),
-     (32, 235),
-     (58, 235),
-     (6, 233),
-     (14, 232),
-     (86, 232),
-     (84, 228),
-     (59, 218),
-     (71, 217),
-     (21, 214),
-     (30, 211),
-     (22, 208),
-     (96, 205),
-     (49, 204),
-     (81, 203),
-     (48, 201),
-     (37, 196),
-     (28, 194),
-     (6, 193),
-     (84, 193),
-     (19, 192),
-     (55, 191),
-     (88, 190),
-     (38, 187),
-     (51, 187),
-     (52, 184),
-     (79, 184),
-     (55, 184),
-     (70, 181),
-     (53, 179),
-     (64, 176),
-     (99, 173),
-     (61, 172),
-     (86, 171),
-     (1, 160),
-     (64, 128),
-     (32, 123),
-     (60, 114),
-     (42, 113),
-     (45, 107),
-     (34, 105),
-     (22, 101),
-     (49, 100),
-     (37, 100),
-     (33, 99),
-     (1, 98),
-     (78, 97),
-     (43, 94),
-     (85, 94),
-     (24, 93),
-     (96, 91),
-     (32, 80),
-     (99, 74),
-     (57, 73),
-     (23, 72),
-     (8, 63),
-     (10, 63),
-     (74, 62),
-     (59, 61),
-     (89, 60),
-     (95, 56),
-     (40, 53),
-     (46, 52),
-     (65, 50),
-     (6, 48),
-     (89, 46),
-     (84, 40),
-     (83, 40),
-     (6, 35),
-     (19, 28),
-     (45, 22),
-     (59, 22),
-     (26, 18),
-     (13, 15),
-     (8, 12),
-     (26, 11),
-     (5, 6),
-     (9, 5)]
-
 sorted_r = sorted(r, key=lambda x: (x[0], x[1]))
 print(sorted_r)
 
-# max_w = 58  # максимальный размер склада
-max_w = 3818
+max_w = 58  # максимальный размер склада
 k = 60  # количество итераций
 len_r = len(sorted_r)
 
@@ -170,8 +103,6 @@ for test in range(1):
         vec = np.zeros(len_r)
         num_ones = random.randint(1, len_r)  # Получение случайного числа элементов для замены
         indices = random.sample(range(len_r), num_ones)  # Получение списка случайных уникальных индексов
-
-        print(indices)
         weight = 0
         c = 0
         for index in indices:  # Замена элементов по индексам на 1
@@ -246,42 +177,11 @@ for test in range(1):
             # Создание новой популяции путем скрещивания родителей
             new_population = []
             for parent_pair in parents:
-                child = np.zeros(len_r)
                 cross_point = random.randint(0, len_r - 1)
                 parent1, parent2 = parent_pair
 
-                weight = 0
-                c = 0
-                # Определение гена для потомка на основе родительских генов
-                for l in range(cross_point):
-                    child[l] = parent1[0][l]  # первая часть копируется полностью
-                    if child[l] == 1:
-                        weight += sorted_r[l][0]
-                        c += sorted_r[l][1]
-                for l in range(cross_point, len_r):  # вторую часть редактируем при необходимости
-                    if parent2[0][l] == 1:
-                        if weight + sorted_r[l][0] > max_w:  # копируем только то, что входит
-                            continue
-                        else:
-                            child[l] = parent2[0][l]
-                            weight += sorted_r[l][0]
-                            c += sorted_r[l][1]
-
-                # Добавление случайной мутации (корректируем, если вышли за пределы)
-                if random.random() < mutation:
-                    index = random.randint(0, len_r - 1)  # Выбор случайного гена
-                    if child[index] == 0 and weight + sorted_r[index][
-                        0] < max_w:  # если ген меняется на 1 и меньше размера склада
-                        weight += sorted_r[index][0]
-                        c += sorted_r[index][1]
-                        child[index] = 1 - child[index]
-                    elif child[index] == 1:  # если ген изменился на 0
-                        weight -= sorted_r[index][0]
-                        c -= sorted_r[index][1]
-                        child[index] = 1 - child[index]
-
-                data = addWeight(weight, c, child, max_w, sorted_r)  # c - функция качества
-                new_population.append(data)  # добавляем потомка в популяцию
+                new_population.append(makeChild(cross_point, parent1, parent2))  # 1 потомок
+                new_population.append(makeChild(cross_point, parent2, parent1))  # 2 потомок
 
             # Объединение старой и новой популяции, сортировка и отбор лучших особей
             population.extend(new_population)
@@ -318,7 +218,8 @@ for test in range(1):
         pylab.xlabel('Итерации')
         pylab.ylabel('Функция качества (стоимость)')
         pylab.title(f'Результат')
-        pylab.legend
-        pylab.text(0, 0, "My Text", fontsize=14)
+        pylab.legend()
 
+print('Лучший ответ: ', max(evaluations_linear[-1], evaluations_random[-1], evaluations_squar[-1]))
+print('Параметры: количество особей - ',  k_vec, ', количество особей для скрещивания - ', k_osob, ', вероятность мутации - ', mutation)
 plt.show()
