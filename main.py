@@ -1,8 +1,9 @@
 import random
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pylab
-
 
 def addWeight(weight_, c_, vec_, max_w_, sorted_r_):  # добавление веса, если вес не максимальный
     indices = [i for i in range(len(vec_)) if vec_[i] == 0]
@@ -61,26 +62,20 @@ def isEqual(parent1, parent2):
     else:
         return 0
 
-r = [(11, 137), (6, 62), (7, 160), (15, 34), (3, 16), (5, 182), (12, 37), (15, 114), (12, 55), (9, 41), (12, 130),
-     (13, 33), (10, 72),
-     (9, 18), (2, 181), (7, 142), (5, 14), (8, 126), (12, 62), (9, 183), (4, 28), (2, 114), (6, 125), (3, 98), (1, 105),
-     (6, 52), (12, 125),
-     (12, 164), (13, 133), (11, 48), (11, 172), (2, 133), (4, 191), (4, 28), (12, 56), (2, 136), (5, 142), (14, 185),
-     (7, 53), (2, 9),
-     (14, 154), (11, 83), (4, 85), (5, 59), (3, 148), (14, 17), (7, 43), (3, 154), (10, 87), (12, 147), (13, 161),
-     (13, 52), (14, 3),
-     (11, 72), (8, 10), (1, 91), (7, 141), (6, 132), (2, 161), (3, 111), (15, 16), (8, 110), (4, 24), (11, 51),
-     (13, 43), (10, 106),
-     (15, 141), (15, 109), (2, 22), (4, 74), (13, 57), (11, 156), (4, 68), (15, 26), (8, 12), (13, 82), (15, 14),
-     (15, 161), (15, 123),
-     (13, 183), (3, 31), (4, 58), (11, 46), (11, 55), (13, 171), (11, 107), (9, 35), (9, 38), (11, 54), (4, 163),
-     (12, 181), (8, 63), (2, 38),
-     (2, 143), (5, 93), (8, 40), (10, 183), (6, 169), (7, 178), (9, 92)]
+with open('items.txt', 'r') as f:
+    content = f.readlines()
+
+max_w = int(content[0].strip())
+
+r = []
+for line in content[1:]:
+    item = tuple(map(int, line.strip().split()))
+    r.append(item)
+r.pop(0)
 
 sorted_r = sorted(r, key=lambda x: (x[0], x[1]))
 print(sorted_r)
 
-max_w = 58  # максимальный размер склада
 k = 60  # количество итераций
 len_r = len(sorted_r)
 
@@ -91,6 +86,7 @@ for i in range(1):
     k_osob = int(dt[1])
     mutation = float(dt[2])
 
+start_time = time.time()
 for test in range(1):
     print(f'\n\nОпыт {test + 1}:\n')
     population = []
@@ -222,4 +218,12 @@ for test in range(1):
 
 print('Лучший ответ: ', max(evaluations_linear[-1], evaluations_random[-1], evaluations_squar[-1]))
 print('Параметры: количество особей - ',  k_vec, ', количество особей для скрещивания - ', k_osob, ', вероятность мутации - ', mutation)
+
+end_time = time.time()
+execution_time = end_time - start_time
+print("Время выполнения: ", execution_time, "секунд")
+
 plt.show()
+
+
+
