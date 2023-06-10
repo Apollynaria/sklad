@@ -67,33 +67,29 @@ def isEqual(parent1, parent2):
         return 0
 
 
-with open('items.txt', 'r') as f:
+with open('param.txt', 'r') as f:
+    param = f.readlines()
+
+fl = int(param[0].strip())
+k_vec = int(param[1].strip())
+k_osob = int(param[2].strip())
+mutation = float(param[3].strip())
+
+with open(f'items{fl}.txt', 'r') as f:
     content = f.readlines()
-
 max_w = int(content[0].strip())
-
 r = []
 for line in content[1:]:
     item = tuple(map(int, line.strip().split()))
     r.append(item)
 r.pop(0)
-
 sorted_r = sorted(r, key=lambda x: (x[0], x[1]))
 print(sorted_r)
-
 k = 60  # количество итераций
 len_r = len(sorted_r)
 
-for i in range(1):
-    print(f'\nНапишите через пробел: количество особей, количество особей для скрещивания и вероятность мутации')
-    dt = input().split()
-    k_vec = int(dt[0])
-    k_osob = int(dt[1])
-    mutation = float(dt[2])
-
 start_time = time.time()
 for test in range(1):
-    print(f'\n\nОпыт {test + 1}:\n')
     population = []
     evaluations_random = []
     evaluations_linear = []
