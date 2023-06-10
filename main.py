@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pylab
 
+
 def addWeight(weight_, c_, vec_, max_w_, sorted_r_):  # добавление веса, если вес не максимальный
     indices = [i for i in range(len(vec_)) if vec_[i] == 0]
     indices = random.sample(indices, len(indices))
@@ -40,20 +41,23 @@ def makeChild(cross_point, parent1, parent2):
                 weight += sorted_r[l][0]
                 c += sorted_r[l][1]
 
-    # Добавление случайной мутации (корректируем, если вышли за пределы)
-    if random.random() < mutation:
-        index = random.randint(0, len_r - 1)  # Выбор случайного гена
-        if child[index] == 0 and weight + sorted_r[index][0] < max_w:  # если ген меняется w < w_склада
-            weight += sorted_r[index][0]
-            c += sorted_r[index][1]
-            child[index] = 1 - child[index]
-        elif child[index] == 1:  # если ген изменился на 0
-            weight -= sorted_r[index][0]
-            c -= sorted_r[index][1]
-            child[index] = 1 - child[index]
-
     data = addWeight(weight, c, child, max_w, sorted_r)  # c - функция качества
     return data
+
+
+def addMutation(child):
+    # Добавление случайной мутации (корректируем, если вышли за пределы)
+    index = random.randint(0, len_r - 1)  # Выбор случайного гена
+    if child[0][index] == 0 and child[1] + sorted_r[index][0] < max_w:  # если ген меняется w < w_склада
+        child[1] += sorted_r[index][0]
+        child[2] += sorted_r[index][1]
+        child[0][index] = 1 - child[0][index]
+    elif child[0][index] == 1:  # если ген изменился на 0
+        child[1] -= sorted_r[index][0]
+        child[2] -= sorted_r[index][1]
+        child[0][index] = 1 - child[0][index]
+
+    return child
 
 
 def isEqual(parent1, parent2):
@@ -61,6 +65,7 @@ def isEqual(parent1, parent2):
         return 1
     else:
         return 0
+
 
 with open('items.txt', 'r') as f:
     content = f.readlines()
@@ -179,7 +184,12 @@ for test in range(1):
                 new_population.append(makeChild(cross_point, parent1, parent2))  # 1 потомок
                 new_population.append(makeChild(cross_point, parent2, parent1))  # 2 потомок
 
-            # Объединение старой и новой популяции, сортировка и отбор лучших особей
+            # Объединение старой и новой популяции, сортировка, мутация старых особей! и отбор лучших особей
+
+            for osob in population:
+                if random.random() < mutation:
+                    osob = addMutation(osob)
+
             population.extend(new_population)
             sorted_population = sorted(population, key=lambda x: x[2],
                                        reverse=True)  # сортируем по убыванию функции качества
@@ -217,13 +227,11 @@ for test in range(1):
         pylab.legend()
 
 print('Лучший ответ: ', max(evaluations_linear[-1], evaluations_random[-1], evaluations_squar[-1]))
-print('Параметры: количество особей - ',  k_vec, ', количество особей для скрещивания - ', k_osob, ', вероятность мутации - ', mutation)
+print('Параметры: количество особей - ', k_vec, ', количество особей для скрещивания - ', k_osob,
+      ', вероятность мутации - ', mutation)
 
 end_time = time.time()
 execution_time = end_time - start_time
 print("Время выполнения: ", execution_time, "секунд")
 
 plt.show()
-
-
-
